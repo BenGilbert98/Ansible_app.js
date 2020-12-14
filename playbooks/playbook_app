@@ -1,0 +1,113 @@
+#
+# This is going to be our example Playbook which is writeen in YAML
+#
+# Your YAML Playbook FILE starts after three --- (dashes)
+
+---
+
+# This is an example targeting host_a
+- name: A play to install sql
+  hosts: host_a
+
+# used to define where this playbook will run
+
+  gather_facts: yes
+# gathers facts/state of machine before running playbook
+
+  become: true
+# become is used to get the root permission to perform tasks that may require a$
+
+# Defining global variables
+#  vars:
+ #   ip_db:
+  #    DB_HOST: 172.31.42.169
+
+  #environment: "{{ ip_db }}"
+
+  tasks:
+
+  handlers:
+    - name: Restart Nginx
+      service:
+        name: nginx
+        state: restarted
+
+    - name: Ben
+      file:
+        path: /home/ubuntu/ben.txt
+        become_user: ubuntu
+        state: touch
+
+  tasks:
+
+  - name: Update all packages to their latest version
+    apt:
+      name: "*"
+      state: latest
+
+  - name: Install a list of packages
+    apt:
+      pkg:
+      - nginx
+      - nodejs
+      - npm
+      - git
+      state: present
+#  - debug:
+ #     msg: "this is the db ip {{ ip_db[DB_HOST].stdout }}"
+
+  - name: manually checking DB_HOST
+    shell: |
+      touch /home/ubuntu/db_checking
+      echo $DB_HOST >> /home/ubuntu/db_checking
+  - name: Install PM2
+    npm:
+      name: pm2
+      global: yes
+
+  - name: Remove node_modules (delete file)
+    file:
+      path: /home/ubuntu/app
+      state: absent
+
+  - name: Remove default file (delete file)
+    file:
+      path: /etc/nginx/sites-available/defualt
+      state: absent
+
+  - name: Copy port80.default file with owner and permissions
+    copy:
+      src: /home/ubuntu/environment/port80.default
+      dest: /etc/nginx/sites-available/default
+      #mode: '0644'
+    notify:
+     - Ben
+
+  - name: Copy app with owner and permissions
+    copy:
+      src: /home/ubuntu/app
+      dest: /home/ubuntu
+      #mode: '0644'
+
+  - name: Kill pm2
+    shell: sudo pm2 kill
+    args:
+      chdir: /home/ubuntu/app
+
+  - name: Install npm
+    shell: sudo npm install
+    args:
+      chdir: /home/ubuntu/app
+
+  - name: Start app.js
+    shell: sudo pm2 start app.js
+    args:
+      chdir: /home/ubuntu/app
+
+
+# be mindful of indentation
+# Each task should be specific
+# One playbook can have many tasks
+
+
+

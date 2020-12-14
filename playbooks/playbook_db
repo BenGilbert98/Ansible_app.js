@@ -1,0 +1,119 @@
+# This is going to be our example Playbook which is writeen in YAML
+#
+# Your YAML Playbook FILE starts after three --- (dashes)
+
+---
+
+# This is an example targeting host_a
+- name: A play to install sql
+  hosts: host_b
+
+# used to define where this playbook will run
+
+  gather_facts: yes
+# gathers facts/state of machine before running playbook
+
+  become: true
+# become is used to get the root permission to perform tasks that may require a$
+
+# Defining global variables
+  tasks:
+
+  handlers:
+    - name: Restart Nginx
+      service:
+        name: nginx
+        state: restarted
+
+    - name: Ben
+      file:
+        path: /home/ubuntu/ben.txt
+        become_user: ubuntu
+        state: touch
+
+  tasks:
+
+  #- name: Sync db
+   # synchronize:
+    #  src: /home/ubuntu/db
+     # dest: /home/ubuntu/
+
+  #- name: Download mongod 3.2.20 key
+   # shell: sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv D68FA50FEA312927
+
+  #- name: Get mongod version
+   # shell: echo "deb https://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.2.list
+
+  #- name: Update sources
+   # command: apt-get update -y
+
+  #- name: Install mongod 3.2.20
+   # shell: sudo apt-get install -y mongodb-org=3.2.20 mongodb-org-server=3.2.20 mongodb-org-shell=3.2.20 mongodb-org-mongos=3.2.20 mongodb-org-tools=3.2.20
+
+  #- name: Remove the mongod.conf file
+   # file:
+    #  path: /etc/mongod.conf
+     # state: absent
+
+  #- name: Link config file
+   # shell: ln -s /home/ubuntu/db/mongod.conf /etc/mongod.conf
+
+  #- name: Restart mongod
+   # service:
+    #  name: mongod
+     # state: restarted
+
+  #- name: Start mongod
+   # service:
+    #  name: mongod
+     # state: started
+      #enabled: yes
+
+  - name: apt update
+    shell: sudo apt update -y
+
+  - name: Import the public key used by the package management system
+    apt_key:
+      keyserver=hkp://keyserver.ubuntu.com:80
+      id=D68FA50FEA312927
+      state=present
+
+  - name: Add MongoDB repository
+    apt_repository: repo='deb https://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.2 multiverse' state=present
+
+  - name: Install 3.2.20 mongod
+    shell: sudo apt-get install -y mongodb-org=3.2.20 mongodb-org-server=3.2.20 mongodb-org-shell=3.2.20 mongodb-org-mongos=3.2.20 mongodb-org-tools=3.2.20
+
+  - name: Remove original mongod.conf
+    file:
+      state: absent
+      path: "/etc/mongod.conf"
+
+  - name: Link config file
+    shell: ln -s /home/ubuntu/db/mongod.conf /etc/mongod.conf
+
+
+  - name: Copy mongod.conf file
+    copy:
+      src: /home/ubuntu/db/mongod.conf
+      dest: /etc/mongod.conf
+
+
+  - name: Restarting mongod service
+    shell: sudo systemctl restart mongod
+    args:
+      chdir: /home/ubuntu/
+
+  - name: Enabling mongod service
+    shell: sudo systemctl enable mongod.service --now
+    args:
+      chdir: /home/ubuntu
+
+
+
+
+# be mindful of indentation
+# Each task should be specific
+# One playbook can have many tasks
+
+
